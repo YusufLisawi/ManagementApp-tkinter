@@ -1,5 +1,5 @@
 from datetime import *
-import string
+from tkinter import ttk
 from tkinter import *
 from tkinter.ttk import Treeview
 from tkinter import messagebox
@@ -125,10 +125,10 @@ class GlocationShow:
 		self.master = master
 		self.frame = Frame(self.master)
 		self.frame.grid(column=0, row=0)
-		self.master.geometry('1310x470+300+205')
+		self.master.geometry('1310x520+300+205')
 		self.master.title("Gestion locations - Afficher")
 		self.master.config(padx=30, pady=30)
-		self.master.minsize(width=1230, height=430)
+		# self.master.minsize(width=1230, height=430)
 
 		self.show()
 
@@ -175,6 +175,23 @@ class GlocationShow:
 
 		self.delete_button = Button(self.frame,text="Supprimer",command=self.delete_location)
 		self.delete_button.grid(row = 8, column = 0, columnspan=6, pady = 10)
+
+		# menus
+		self.filter_options = {
+			'fDate' : "Filtrer Location par Date",
+			'fCitadine' : "Afficher Locations Citadine",
+			'fVip' : "Afficher Locations Vip",
+			'fMarque' : "Afficher Locations par Marque",
+			'fImma' : "Afficher Locations par Immatricule",
+			'fClient' : "Afficher Locations par Client"
+		}
+
+		self.combo = ttk.Combobox(self.frame, values = list(self.filter_options.values()), state="readonly", width=25)
+		self.combo.grid(column=0, columnspan=6, row=9)
+		self.combo.set("Filtrer par ...")
+		self.filterbtn = Button(self.frame, text="Filtrer", highlightthickness=0, border=0, width=9, font=(FONT, 20))
+		self.filterbtn.grid(column=0, columnspan=6, row=10, ipady=5, pady=8)
+
 
 	def tableConstructor(self):
 		self.table = Treeview(self.frame, columns=(1,2,3,4,5,6), show="headings", height="5")
@@ -272,3 +289,13 @@ class GlocationShow:
 		# self.date_location_entry.get_date()
 		self.durée_location_entry.delete(0, END)
 		self.prix_location_entry.delete(0, END)
+
+		idLoc = StringVar()
+		idLoc.set('')
+		clientLoc = StringVar()
+		clientLoc.set('')
+		voitureLoc = StringVar()
+		voitureLoc.set('')
+		self.idLocation_entry.config(textvariable=idLoc)
+		self.Client_entry.config(textvariable=clientLoc)
+		self.Voiture_entry.config(textvariable=voitureLoc)

@@ -12,10 +12,6 @@ class Client:
 	def setNumPermis(self, n): self.__NumPermis = n
 	def setTele(self, n): self.__tele = n
 
-	def Ajouter(self):
-		pass
-	def SupprimerCin(self):
-		pass
 	def ModifierInfo(self, cin, nump, tele):
 		self.setCin(cin)
 		self.setNumPermis(nump)

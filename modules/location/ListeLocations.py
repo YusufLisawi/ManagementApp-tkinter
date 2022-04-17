@@ -11,7 +11,7 @@ class ListeLocations:
 	def SupprimerLocation(self, Location):
 		self.ListLocations.remove(Location)
 	
-	def FilterLocationDate(self, date):
+	def FiltrerLocationDate(self, date):
 		location_date = []
 		for location in self.ListLocations:
 			if (location.getdate_location == date):

@@ -20,14 +20,6 @@ class Voiture(ABC):
 	def setModele(self, n): self._modele = n
 	def setPuissancefis(self, n): self._puissance_fiscale = n
 
-	# @abstractmethod
-	# def Ajouter(self):
-	# 	pass
-
-	# @abstractmethod
-	# def SupprimerIm(self, immatriculation):
-	# 	pass
-
 	def ModifierInfo(self, imma, marque, carburant, modele, puissace):
 		self.setImmatricule(imma)
 		self.setMarque(marque)
