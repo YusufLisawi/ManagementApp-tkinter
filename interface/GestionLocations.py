@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import *
 from tkinter.ttk import Treeview
 from tkinter import messagebox
+from numpy import column_stack
 from tkcalendar import DateEntry
 from modules.location.location import Location
 from modules.location.ListeLocations import ListeLocations, Location
@@ -183,16 +184,154 @@ class GlocationShow:
 			'fVip' : "Afficher Locations Vip",
 			'fMarque' : "Afficher Locations par Marque",
 			'fImma' : "Afficher Locations par Immatricule",
-			'fClient' : "Afficher Locations par Client"
+			'fClient' : "Afficher Locations par Client (Cin)"
 		}
 
 		self.combo = ttk.Combobox(self.frame, values = list(self.filter_options.values()), state="readonly", width=25)
 		self.combo.grid(column=0, columnspan=6, row=9)
 		self.combo.set("Filtrer par ...")
-		self.filterbtn = Button(self.frame, text="Filtrer", highlightthickness=0, border=0, width=9, font=(FONT, 20))
-		self.filterbtn.grid(column=0, columnspan=6, row=10, ipady=5, pady=8)
+		self.combo.bind('<<ComboboxSelected>>', self.selected) 
+		self.filterbtn = Button(self.frame, text="Filtrer", highlightthickness=0, border=0, font=(FONT, 20))
 
 
+	def selected(self, *args):
+		choice = self.combo.get()
+		if choice == self.filter_options['fDate']:
+			global date_filter
+			date_filter = DateEntry(self.frame, border=0, width=19)
+			self.filterbtn.config(text="Filtrer", command=self.fDate)
+			self.filterbtn.grid(column=0, columnspan=6, row=11, ipady=5, pady=8, ipadx=8)
+		elif choice == self.filter_options['fCitadine']:
+			self.filterbtn.config(text="Filtrer", command=self.fCitadine)
+			self.filterbtn.grid(column=0, columnspan=6, row=11, ipady=5, pady=8, ipadx=8)
+		elif choice == self.filter_options['fVip']:
+			self.filterbtn.config(text="Filtrer", command=self.fVip)
+			self.filterbtn.grid(column=0, columnspan=6, row=11, ipady=5, pady=8, ipadx=8)
+		elif choice == self.filter_options['fMarque']:
+			global marque_filter
+			marque_filter = Entry(self.frame, border=0, width=20, highlightthickness=2, highlightcolor="red", cursor="text")
+			self.filterbtn.config(text="Filtrer", command=self.fMarque)
+			self.filterbtn.grid(column=0, columnspan=6, row=11, ipady=5, pady=8, ipadx=8)
+		elif choice == self.filter_options['fImma']:
+			global imma_filter
+			imma_filter = Entry(self.frame, border=0, width=20, highlightthickness=2, highlightcolor="red", cursor="text")
+			self.filterbtn.config(text="Filtrer", command=self.fImma)		
+			self.filterbtn.grid(column=0, columnspan=6, row=11, ipady=5, pady=8, ipadx=8)
+		elif choice == self.filter_options['fClient']:
+			global Cin_filter
+			Cin_filter = Entry(self.frame, border=0, width=20, highlightthickness=2, highlightcolor="red", cursor="text")
+			self.filterbtn.config(text="Filtrer", command=self.fClient)
+			self.filterbtn.grid(column=0, columnspan=6, row=11, ipady=5, pady=8, ipadx=8)
+
+	def fDate(self):
+		self.tableConstructor()
+		date_filter.grid(column=0, columnspan=6, row=10)
+		listDate = listlocation.FiltrerLocationDate(date=date_filter.get_date())
+		# print(listDate)
+		rows = []
+		try:
+			for lct in listDate:
+				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+			r = 1
+			for i in rows:
+				try:
+					self.table.insert(parent='',index='end',iid=r,text='', values=i)
+				except:
+					r+=1
+				r+=1
+		except:
+			pass
+
+	def fCitadine(self):
+		self.tableConstructor()
+		listCitadine = listlocation.AfficherListeLocationCitadine()
+		# print(listCitadine)
+		rows = []
+		try:
+			for lct in listCitadine:
+				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+			r = 1
+			for i in rows:
+				try:
+					self.table.insert(parent='',index='end',iid=r,text='', values=i)
+				except:
+					r+=1
+				r+=1
+		except:
+			pass
+
+	def fVip(self):
+		self.tableConstructor()
+		listVip = listlocation.AfficherListeLocationVip()
+		# print(listVip)
+		rows = []
+		try:
+			for lct in listVip:
+				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+			r = 1
+			for i in rows:
+				try:
+					self.table.insert(parent='',index='end',iid=r,text='', values=i)
+				except:
+					r+=1
+				r+=1
+		except:
+			pass
+
+	def fMarque(self):
+		self.tableConstructor()
+		marque_filter.grid(column=0, columnspan=6, row=10)
+		listMarque = listlocation.AfficherLocationMarque(marque_filter.get())
+		rows = []
+		try:
+			for lct in listMarque:
+				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+			r = 1
+			for i in rows:
+				try:
+					self.table.insert(parent='',index='end',iid=r,text='', values=i)
+				except:
+					r+=1
+				r+=1
+		except:
+			pass
+
+	def fImma(self):
+		self.tableConstructor()
+		imma_filter.grid(column=0, columnspan=6, row=10)
+		listImma = listlocation.AfficherLocationImma(imma_filter.get())
+		rows = []
+		try:
+			for lct in listImma:
+				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+			r = 1
+			for i in rows:
+				try:
+					self.table.insert(parent='',index='end',iid=r,text='', values=i)
+				except:
+					r+=1
+				r+=1
+		except:
+			pass
+
+	def fClient(self):
+		self.tableConstructor()
+		Cin_filter.grid(column=0, columnspan=6, row=10)
+		listClient = listlocation.AfficherLocationClient(Cin_filter.get())
+		rows = []
+		try:
+			for lct in listClient:
+				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+			r = 1
+			for i in rows:
+				try:
+					self.table.insert(parent='',index='end',iid=r,text='', values=i)
+				except:
+					r+=1
+				r+=1
+		except:
+			pass
+		
 	def tableConstructor(self):
 		self.table = Treeview(self.frame, columns=(1,2,3,4,5,6), show="headings", height="5")
 		self.table.grid(column=0, columnspan=6, row=2)
@@ -262,15 +401,19 @@ class GlocationShow:
 
 		if date_location != '' and durée_location != '' and prix_location != '':
 			#save and update the data
-			for lct in listlocation.ListLocations:
-				if str(lct.getidLocation()) == str(LOCA):
-					lct.setdate_location(date_location)
-					lct.setdurée_location(durée_location)
-					lct.setprix_location(prix_location)
-					print(lct)
-					break
-			self.clearBoxes()
-			self.show()
+			try:
+				for lct in listlocation.ListLocations:
+					if str(lct.getidLocation()) == str(LOCA):
+						lct.setdate_location(date_location)
+						lct.setdurée_location(durée_location)
+						lct.setprix_location(prix_location)
+						print(lct)
+						break
+				self.clearBoxes()
+				self.show()
+			except:
+				messagebox.showwarning(message="Selecter une location", title="Location location")
+
 		else:
 			messagebox.showwarning(message="Remplir tous les champs!", title="Location location")
 

@@ -42,7 +42,7 @@ class Accueil:
 
 		self.combo = ttk.Combobox(self.frame, values = [], state="readonly")
 
-		self.demarrer_button = Button(self.frame, text="Démarrer", highlightthickness=0, border=0, width=12, font=(FONT, 20), command = self.launch)
+		self.demarrer_button = Button(self.frame, text="Ouvrir", highlightthickness=0, border=0, width=12, font=(FONT, 20), command = self.launch)
 
 		self.frame.grid(column=0, row=0)
 
@@ -77,27 +77,31 @@ class Accueil:
 
 	def launch(self):
 		choice = self.combo.get()
-		self.newWindow = Toplevel(self.master)
-		# user
-		if choice == self.comboGuser[0]:
-			self.app = GuserShow(self.newWindow)
-		elif choice == self.comboGuser[1]:
-			self.app = GuserAdd(self.newWindow)
-		# client
-		elif choice == self.comboGclient[1]:
-			self.app = GclientAdd(self.newWindow)
-		elif choice == self.comboGclient[0]:
-			self.app = GclientShow(self.newWindow)
-		# voiture
-		elif choice == self.comboGvoiture[1]:
-			self.app = GvoitureAdd(self.newWindow)
-		elif choice == self.comboGvoiture[0]:
-			self.app = GvoitureShow(self.newWindow)
-		# location
-		elif choice == self.comboGlocation[1]:
-			self.app = GlocationAdd(self.newWindow)
-		elif choice == self.comboGlocation[0]:
-			self.app = GlocationShow(self.newWindow)
+		if choice in self.comboGuser + self.comboGclient + self.comboGvoiture + self.comboGlocation:
+			self.newWindow = Toplevel(self.master)
+			# user
+			if choice == self.comboGuser[0]:
+				self.app = GuserShow(self.newWindow)
+			elif choice == self.comboGuser[1]:
+				self.app = GuserAdd(self.newWindow)
+			# client
+			elif choice == self.comboGclient[1]:
+				self.app = GclientAdd(self.newWindow)
+			elif choice == self.comboGclient[0]:
+				self.app = GclientShow(self.newWindow)
+			# voiture
+			elif choice == self.comboGvoiture[1]:
+				self.app = GvoitureAdd(self.newWindow)
+			elif choice == self.comboGvoiture[0]:
+				self.app = GvoitureShow(self.newWindow)
+			# location
+			elif choice == self.comboGlocation[1]:
+				self.app = GlocationAdd(self.newWindow)
+			elif choice == self.comboGlocation[0]:
+				self.app = GlocationShow(self.newWindow)
+		else:
+			messagebox.showwarning(message="Selecter un option", title="Location Voiture")
+
 
 
 

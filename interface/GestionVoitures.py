@@ -4,7 +4,7 @@ from tkinter import messagebox
 from modules.voiture.voiture import *
 
 FONT = "Arial"
-listvoiture = [VoitureVip("6969", "toyota", "test", "2019", "6 CV", type="SUV"), VoitureCitadinne("3402", "toyota", "test", "2019", "6 CV", gamme="A")]
+listvoiture = [VoitureVip("6969", "toyota", "test", "2019", "6", type="SUV"), VoitureCitadinne("3402", "toyota", "test", "2019", "6", gamme="A")]
 class GvoitureAdd:
 	def __init__(self, master):
 		self.master = master
@@ -125,7 +125,7 @@ class GvoitureAdd:
 				if type != '' and gamme == '':
 					if type in ["4*4", "SUV", "minibus", "limousine"]:
 						listvoiture.append(VoitureVip(Imma, marque, carburant, model, puissance, type))
-						messagebox.showwarning(message=f"Voiture a ete bien ajouter!", title=f"Location voiture")
+						messagebox.showinfo(message=f"Voiture a ete bien ajouter!", title=f"Location voiture")
 					else:
 						messagebox.showwarning(message="Le Type est invalide", title="Location Voiture")
 
@@ -215,9 +215,9 @@ class GvoitureShow:
 			for voiture in listvoiture:
 				# print('-- New data --\n', voiture)
 				if isinstance(voiture, VoitureVip):
-					rows.append(tuple((voiture.getImmatricule(), voiture.getMarque(), voiture.getCarburant(), voiture.getModele(), voiture.getPuissancefis(), f"{voiture.getType()} (Type )")))
+					rows.append(tuple((voiture.getImmatricule(), voiture.getMarque(), voiture.getCarburant(), voiture.getModele(), f"{voiture.getPuissancefis()} CV", f"{voiture.getType()} (Type )")))
 				elif isinstance(voiture, VoitureCitadinne):
-					rows.append(tuple((voiture.getImmatricule(), voiture.getMarque(), voiture.getCarburant(), voiture.getModele(), voiture.getPuissancefis(), f"{voiture.getGamme()} (Gamme)")))
+					rows.append(tuple((voiture.getImmatricule(), voiture.getMarque(), voiture.getCarburant(), voiture.getModele(), f"{voiture.getPuissancefis()} CV", f"{voiture.getGamme()} (Gamme)")))
 			r = 1
 			for i in rows:
 				try:
@@ -242,7 +242,7 @@ class GvoitureShow:
 			self.marque_entry.insert(0,values[1])
 			self.carburant_entry.insert(0, values[2])
 			self.model_entry.insert(0, values[3])
-			self.puissance_entry.insert(0, values[4])
+			self.puissance_entry.insert(0, values[4][:-3])
 			self.gaty_entry.insert(0,values[5][:-8])
 		except:
 			messagebox.showwarning(message="Selecter un Voitures!", title="Location Voiture")

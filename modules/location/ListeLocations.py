@@ -14,7 +14,7 @@ class ListeLocations:
 	def FiltrerLocationDate(self, date):
 		location_date = []
 		for location in self.ListLocations:
-			if (location.getdate_location == date):
+			if (location.getdate_location() == date):
 				location_date.append(location)
 		return (location_date)
 	
@@ -24,14 +24,14 @@ class ListeLocations:
 	def AfficherListeLocationCitadine(self):
 		location_citadine = []
 		for location in self.ListLocations:
-			if (isinstance(location, VoitureCitadinne)):
+			if (isinstance(location.getVoiture(), VoitureCitadinne)):
 				location_citadine.append(location)
 		return (location_citadine)
 
 	def AfficherListeLocationVip(self):
 		location_Vip = []
 		for location in self.ListLocations:
-			if (isinstance(location, VoitureVip)):
+			if (isinstance(location.getVoiture(), VoitureVip)):
 				location_Vip.append(location)
 		return (location_Vip)
 
