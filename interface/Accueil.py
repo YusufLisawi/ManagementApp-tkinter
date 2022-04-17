@@ -97,6 +97,8 @@ class Accueil:
 
 def main(): 
 	root = Window(900, 450, "Accueil")
+	style = ttk.Style()
+	style.theme_use('clam')
 	root.maxsize(width=980, height=580)
 	root.config(padx=50, pady=50)
 	app = Accueil(root)

@@ -15,5 +15,5 @@ class Window(Tk):
 		self.y = (self.hs/2) - (self.h/2)
 
 		# set the dimensions of the screen 
-		# and where it is placedz
+		# and where it is placed
 		self.geometry(f"+{int(self.x)}+{int(self.y-50)}")
