@@ -5,7 +5,7 @@ from tkinter import messagebox
 from interface.GestionUtilisateur import GuserAdd, GuserShow
 from interface.GestionClients import GclientAdd, GclientShow
 from interface.GestionVoitures import GvoitureAdd, GvoitureShow
-from interface.GestionLocations import GlocationAdd
+from interface.GestionLocations import GlocationAdd, GlocationShow
 
 FONT = "Arial"	
 class Accueil:
@@ -96,8 +96,8 @@ class Accueil:
 		# location
 		elif choice == self.comboGlocation[1]:
 			self.app = GlocationAdd(self.newWindow)
-		# elif choice == self.comboGlocation[0]:
-		# 	self.app = GlocationShow(self.newWindow)
+		elif choice == self.comboGlocation[0]:
+			self.app = GlocationShow(self.newWindow)
 
 
 

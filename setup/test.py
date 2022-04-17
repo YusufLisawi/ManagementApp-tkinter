@@ -31,6 +31,7 @@
 # if __name__ == '__main__':
 #     main()
 
+from calendar import month
 from pydoc import TextRepr
 import tkinter as tk
 from tkinter import ttk
@@ -44,7 +45,8 @@ ttk.Label(top, text='Choose date').pack(padx=10, pady=10)
 
 style = ttk.Style()
 style.theme_use('clam')  # -> uncomment this line if the styling does not work
-dateentry = DateEntry(top, width=12, selectmode='day', borderwidth=2, )
+dateentry = DateEntry(top, width=12, selectmode='day', borderwidth=2)
+dateentry.config(year=2019, day=10, month=12)
 def dateentry_used(*args):
     date = dateentry.get_date()
     print(date)

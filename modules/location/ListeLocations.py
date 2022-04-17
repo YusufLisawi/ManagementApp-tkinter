@@ -56,8 +56,6 @@ class ListeLocations:
 				location_cin.append(location)
 		return (location_cin)
 	
-	
-
 
 	
 
