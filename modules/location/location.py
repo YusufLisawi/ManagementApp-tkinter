@@ -25,7 +25,7 @@ class Location:
 	def setidLocation(self, n): self.__idLocation = n
 
 	def __str__(self) -> str:
-		return f"idLocation : {self.__idLocation} , date de location : {self.__date_location}, durée de location : {self.__durée_location}, prix de location : {self.__prix_location}, Client : {self.__Client.getCin()} ,Voiture : {self.__Voiture.getImmatricule()}"
+		return f"idLocation : {self.__idLocation} , date de location : {self.__date_location}, durée de location : {self.__durée_location}, prix de location : {self.__prix_location}, Client : {self.__Client} ,Voiture : {self.__Voiture}"
 	
 
 

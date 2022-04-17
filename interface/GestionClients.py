@@ -54,6 +54,7 @@ class GclientAdd:
 					break
 			if exist == 0:
 				listclients.append(Client(Cin, NumPermis, Tele))
+				messagebox.showwarning(message=f"Client a ete bien ajouter!", title=f"Location voiture")
 			else:
 				messagebox.showwarning(message="Client exist deja!", title="Location Voiture")
 		pass

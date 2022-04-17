@@ -55,6 +55,8 @@ class GuserAdd:
 					break
 			if exist == 0: 
 				listUser.Ajouter(Utilisateur(login, password, email))
+				messagebox.showwarning(message=f"Utilisateur a ete bien ajouter!", title=f"Location voiture")
+
 			else:
 				messagebox.showwarning(message="Utilisateur exist deja!", title="Location Voiture")
 

@@ -125,12 +125,14 @@ class GvoitureAdd:
 				if type != '' and gamme == '':
 					if type in ["4*4", "SUV", "minibus", "limousine"]:
 						listvoiture.append(VoitureVip(Imma, marque, carburant, model, puissance, type))
+						messagebox.showwarning(message=f"Voiture a ete bien ajouter!", title=f"Location voiture")
 					else:
 						messagebox.showwarning(message="Le Type est invalide", title="Location Voiture")
 
 				elif type == '' and gamme != '':
 					if gamme in ["A", "B", "C"]:
 						listvoiture.append(VoitureCitadinne(Imma, marque, carburant, model, puissance, gamme))
+						messagebox.showwarning(message=f"Voiture a ete bien ajouter!", title=f"Location voiture")
 					else:
 						messagebox.showwarning(message="Le Gamme est invalide", title="Location Voiture")
 				
