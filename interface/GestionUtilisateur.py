@@ -110,12 +110,13 @@ class GuserShow:
 				# print('-- New data --\n', user)
 				rows.append(tuple((user.getLogin(), user.getEmail())))
 			r = 1
-			for i in rows:
-				try:
-					self.table.insert(parent='',index='end',iid=r,text='', values=i)
-				except:
+			if len(rows) > 0: 
+				for i in rows:
+					try:
+						self.table.insert(parent='',index='end',iid=r,text='', values=i)
+					except:
+						r+=1
 					r+=1
-				r+=1
 		except:
 			pass
 

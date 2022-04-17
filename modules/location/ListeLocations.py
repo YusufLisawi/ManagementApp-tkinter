@@ -6,10 +6,10 @@ class ListeLocations:
 		self.ListLocations = ListLocations
 	
 	def AjouterLocation(self, Location):
-		self.ListLocation.append(Location)
+		self.ListLocations.append(Location)
 
 	def SupprimerLocation(self, Location):
-		self.ListLocation.remove(Location)
+		self.ListLocations.remove(Location)
 	
 	def FilterLocationDate(self, date):
 		location_date = []

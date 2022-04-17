@@ -1,9 +1,13 @@
+from datetime import datetime
+import string
 from tkinter import *
 from tkinter.ttk import Treeview
 from tkinter import messagebox
 from tkcalendar import DateEntry
 from modules.location.location import Location
 from modules.location.ListeLocations import ListeLocations, Location
+from interface.GestionClients import listclients
+from interface.GestionVoitures import listvoiture
 
 FONT = "Arial"
 listlocation = ListeLocations(ListLocations=[])
@@ -12,39 +16,106 @@ class GlocationAdd:
 		self.master = master
 		self.frame = Frame(self.master)
 		self.frame.grid(column=0, row=0)
-		self.master.geometry('450x430+400+305')
+		self.master.geometry('475x330+400+305')
 		self.master.title("Gestion locations - Ajouter")
 		self.master.config(padx=30,pady=30)
-		self.master.minsize(width=445, height=430)
+		self.master.minsize(width=465, height=330)
 
 		# add location widgets
 		self.idLocation_label = Label(self.frame, text="Id Location", font=(FONT, 15))
 		self.Client_label = Label(self.frame, text="Client Cin", font=(FONT, 15))
 		self.Voiture_label = Label(self.frame, text="Voiture Immatricule", font=(FONT, 15))
 		self.date_location_label = Label(self.frame, text="Date location", font=(FONT, 15))
-		self.durée_location_label = Label(self.frame, text="Durée location", font=(FONT, 15))
-		self.prix_location_label = Label(self.frame, text="Prix location", font=(FONT, 15))
-		
-		self.idLocation_label
-		self.Client_label
-		self.Voiture_label
-		self.date_location_label
-		self.durée_location_label
-		self.prix_location_label
+		self.durée_location_label = Label(self.frame, text="Durée location (Jours)", font=(FONT, 15))
+		self.prix_location_label = Label(self.frame, text="Prix location (Dhs)", font=(FONT, 15))
+
+		self.idLocation_label.grid(column=0, row=1, pady=5)
+		self.Client_label.grid(column=1, row=1, pady=5)
+		self.Voiture_label.grid(column=0, row=3, pady=5)
+		self.date_location_label.grid(column=1, row=3, pady=5)
+		self.durée_location_label.grid(column=0, row=5, pady=5)
+		self.prix_location_label.grid(column=1, row=5, pady=5)
 
 		# entries
-		self.idLocation_entry = Entry(self.frame, border=0, width=21, highlightthickness=2, highlightcolor="red", cursor="text")
+		self.idLoc = StringVar()
+		self.idLoc.set(Location.auto)
+		self.idLocation_entry = Entry(self.frame, border=1, width=21, highlightthickness=2, highlightcolor="red", cursor="text", textvariable=self.idLoc, state=DISABLED)
 		self.Client_entry = Entry(self.frame, border=0, width=21, highlightthickness=2, highlightcolor="red", cursor="text")
 		self.Voiture_entry = Entry(self.frame, border=0, width=21, highlightthickness=2, highlightcolor="red", cursor="text")
 		self.date_location_entry = DateEntry(self.frame, width=21, selectmode='day', borderwidth=2)
-		self.durée_location_entry = Spinbox(self.frame,from_=0, to=325, border=0, width=21)
-		self.prix_location_entry = Spinbox(self.frame, border=0,from_=0, to=999999999, width=21)
+		self.durée_location_entry = Spinbox(self.frame,from_=0, to=325, border=0, width=19, highlightthickness=2, highlightcolor="red",)
+		self.prix_location_entry = Spinbox(self.frame, border=0,from_=0, to=999999999, width=19, highlightthickness=2, highlightcolor="red",)
+
+		self.idLocation_entry.grid(column=0, row=2, pady=4, ipady=8)
+		self.Client_entry.grid(column=1, row=2, pady=4, ipady=8)
+		self.Voiture_entry.grid(column=0, row=4, pady=4, ipady=8)
+		self.date_location_entry.grid(column=1, row=4, pady=4, ipady=8)
+		self.durée_location_entry.grid(column=0, row=6, pady=4, ipady=8)
+		self.prix_location_entry.grid(column=1, row=6, pady=4, ipady=8)
+
 
 		self.ajouter_btn = Button(self.frame,text="Ajouter", highlightthickness=0, border=0, width=16, font=(FONT, 16), command=self.addlocation)		
+		self.ajouter_btn.grid(column=0, columnspan=2, row=7 , ipadx=4, ipady=5, pady=10)
 		# ----
 
 	def addlocation(self):
-		pass
+		# get the new selected date 
+		def getDateEntry(*args):
+			global date_location
+			date_location = self.date_location_entry.get_date()
+
+		Client = self.Client_entry.get()
+		Voiture = self.Voiture_entry.get()
+		date_location = self.date_location_entry.get_date()
+		durée_location = self.durée_location_entry.get()
+		prix_location = self.prix_location_entry.get()
+
+		self.date_location_entry.bind("<<DateEntrySelected>>", getDateEntry)
+
+		if Client == '' or Voiture == '' or date_location == '' or durée_location == '0' or prix_location == '0':
+			messagebox.showwarning(message="Remplir tous les champs!", title="Location Voiture")
+		else:
+			exist = 0
+			for lct in listlocation.ListLocations:
+				if Client == lct.getClient().getCin() and Voiture == lct.getVoiture().getImmatricule():
+					exist = 1
+					break
+			if exist == 0: 
+				# searching for a client with the same Cin given
+				foundc = 0
+				foundv = 0
+				for clt in listclients:
+					if Client == clt.getCin():
+						foundc = 1
+						break
+				# searching for a 'Voiture' with the same Imma given
+				for vtr in listvoiture:
+					if Voiture == vtr.getImmatricule():
+						foundv = 1
+						break
+				if foundc and foundv:
+					location = Location(date_location, durée_location, prix_location, clt, vtr) 
+					listlocation.AjouterLocation(location)
+					# show the incremented id
+					self.idLoc.set(Location.auto)
+					self.idLocation_entry = Entry(self.frame, border=1, width=21, highlightthickness=2, highlightcolor="red", cursor="text", textvariable=self.idLoc, state=DISABLED)
+					self.idLocation_entry.grid(column=0, row=2, pady=4, ipady=8)
+					self.clearBoxes()
+					messagebox.showwarning(message="Location a bien ajouter!", title=f"Location ID : {self.idLoc}")
+					# print(location)
+				else:
+					messagebox.showwarning(message="Client ou Voiture n'exist pas!", title="Location Voiture")
+			else:
+				messagebox.showwarning(message="Location exist deja!", title="Location Voiture")
+				# self.clearBoxes()
+
+	def clearBoxes(self):
+		self.Client_entry.delete(0, END)
+		self.Voiture_entry.delete(0, END)
+		# self.date_location_entry.get_date()
+		self.durée_location_entry.delete(0, END)
+		self.prix_location_entry.delete(0, END)
+		
 
 
 # class GlocationShow:		
