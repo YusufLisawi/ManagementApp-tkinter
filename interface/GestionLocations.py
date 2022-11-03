@@ -3,17 +3,12 @@ from tkinter import ttk
 from tkinter import *
 from tkinter.ttk import Treeview
 from tkinter import messagebox
-from numpy import column_stack
 from tkcalendar import DateEntry
-from modules.location.location import Location
-from modules.location.ListeLocations import ListeLocations, Location
-from interface.GestionClients import listclients
-from interface.GestionVoitures import listvoiture
+from modules.location.ListeLocations import AfficherListeLocationCitadine, AfficherListeLocationVip, AfficherLocationClient, AfficherLocationImma, AfficherLocationMarque
+from db.conn_mongodb import mydb
 
 FONT = "Arial"
 DATE = date(2023,12,19)
-lo = Location(DATE, "3", "299", listclients[0], listvoiture[0])
-listlocation = ListeLocations(ListLocations=[lo])
 class GlocationAdd:
 	def __init__(self, master):
 		self.master = master
@@ -41,7 +36,7 @@ class GlocationAdd:
 
 		# entries
 		self.idLoc = StringVar()
-		self.idLoc.set(Location.auto)
+		self.idLoc.set(mydb["Location"].count_documents({}))
 		self.idLocation_entry = Entry(self.frame, border=1, width=21, highlightthickness=2, highlightcolor="red", cursor="text", textvariable=self.idLoc, state=DISABLED)
 		self.Client_entry = Entry(self.frame, border=0, width=21, highlightthickness=2, highlightcolor="red", cursor="text")
 		self.Voiture_entry = Entry(self.frame, border=0, width=21, highlightthickness=2, highlightcolor="red", cursor="text")
@@ -79,38 +74,21 @@ class GlocationAdd:
 			messagebox.showwarning(message="Remplir tous les champs!", title="Location Voiture")
 		else:
 			exist = 0
-			for lct in listlocation.ListLocations:
-				if Client == lct.getClient().getCin() and Voiture == lct.getVoiture().getImmatricule():
-					exist = 1
-					break
+			if mydb["Location"].find_one({"client" : Client, "voiture" : Voiture, "date_location" : date_location, "durée_location" : durée_location, "prix_location" : prix_location,}) != None:
+				exist = 1
 			if exist == 0: 
-				# searching for a client with the same Cin given
-				foundc = 0
-				foundv = 0
-				for clt in listclients:
-					if Client == clt.getCin():
-						foundc = 1
-						break
-				# searching for a 'Voiture' with the same Imma given
-				for vtr in listvoiture:
-					if Voiture == vtr.getImmatricule():
-						foundv = 1
-						break
-				if foundc and foundv:
-					location = Location(date_location, durée_location, prix_location, clt, vtr) 
-					listlocation.AjouterLocation(location)
+				if mydb["Client"].find_one({"cin" : Client}) != None and mydb["Voiture"].find_one({"imma" : Voiture}) != None:
+					mydb["Location"].insert_one({"_id": self.idLoc, "date_location" : date_location, "durée_location" : durée_location, "prix_location" : prix_location, "Client" : Client, "Voiture" : Voiture})
 					# show the incremented id
-					self.idLoc.set(Location.auto)
+					self.idLoc.set(mydb["Location"].count_documents({}))
 					self.idLocation_entry = Entry(self.frame, border=1, width=21, highlightthickness=2, highlightcolor="red", cursor="text", textvariable=self.idLoc, state=DISABLED)
-					self.idLocation_entry.grid(column=0, row=2, pady=4, ipady=8)
+					self.idLocation_entry.grid(column=0, row=2, pady=4, ipady=8) 
 					self.clearBoxes()
 					messagebox.showinfo(message=f"Location a ete bien ajouter!", title=f"Location voiture")
-					# print(location)
 				else:
 					messagebox.showwarning(message="Client ou Voiture n'exist pas!", title="Location Voiture")
 			else:
 				messagebox.showwarning(message="Location exist deja!", title="Location Voiture")
-				# self.clearBoxes()
 
 	def clearBoxes(self):
 		self.Client_entry.delete(0, END)
@@ -129,7 +107,6 @@ class GlocationShow:
 		self.master.geometry('1310x520+300+205')
 		self.master.title("Gestion locations - Afficher")
 		self.master.config(padx=30, pady=30)
-		# self.master.minsize(width=1230, height=430)
 
 		self.show()
 
@@ -226,12 +203,12 @@ class GlocationShow:
 	def fDate(self):
 		self.tableConstructor()
 		date_filter.grid(column=0, columnspan=6, row=10)
-		listDate = listlocation.FiltrerLocationDate(date=date_filter.get_date())
+		listDate = FiltrerLocationDate(date=date_filter.get_date())
 		# print(listDate)
 		rows = []
 		try:
 			for lct in listDate:
-				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+				rows.append(tuple((lct["_id"], lct["Client"], lct["Voiture"], lct["date_location"], f"{lct.durée_location} Jour(s)", f"{lct.prix_location} Dhs")))
 			r = 1
 			for i in rows:
 				try:
@@ -244,12 +221,12 @@ class GlocationShow:
 
 	def fCitadine(self):
 		self.tableConstructor()
-		listCitadine = listlocation.AfficherListeLocationCitadine()
+		listCitadine = AfficherListeLocationCitadine()
 		# print(listCitadine)
 		rows = []
 		try:
 			for lct in listCitadine:
-				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+				rows.append(tuple((lct["_id"], lct["Client"], lct["Voiture"], lct["date_location"], f"{lct.durée_location} Jour(s)", f"{lct.prix_location} Dhs")))
 			r = 1
 			for i in rows:
 				try:
@@ -262,12 +239,12 @@ class GlocationShow:
 
 	def fVip(self):
 		self.tableConstructor()
-		listVip = listlocation.AfficherListeLocationVip()
+		listVip = AfficherListeLocationVip()
 		# print(listVip)
 		rows = []
 		try:
 			for lct in listVip:
-				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+				rows.append(tuple((lct["_id"], lct["Client"], lct["Voiture"], lct["date_location"], f"{lct.durée_location} Jour(s)", f"{lct.prix_location} Dhs")))
 			r = 1
 			for i in rows:
 				try:
@@ -281,11 +258,11 @@ class GlocationShow:
 	def fMarque(self):
 		self.tableConstructor()
 		marque_filter.grid(column=0, columnspan=6, row=10)
-		listMarque = listlocation.AfficherLocationMarque(marque_filter.get())
+		listMarque = AfficherLocationMarque(marque_filter.get())
 		rows = []
 		try:
 			for lct in listMarque:
-				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+				rows.append(tuple((lct["_id"], lct["Client"], lct["Voiture"], lct["date_location"], f"{lct.durée_location} Jour(s)", f"{lct.prix_location} Dhs")))
 			r = 1
 			for i in rows:
 				try:
@@ -299,11 +276,11 @@ class GlocationShow:
 	def fImma(self):
 		self.tableConstructor()
 		imma_filter.grid(column=0, columnspan=6, row=10)
-		listImma = listlocation.AfficherLocationImma(imma_filter.get())
+		listImma = AfficherLocationImma(imma_filter.get())
 		rows = []
 		try:
 			for lct in listImma:
-				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+				rows.append(tuple((lct["_id"], lct["Client"], lct["Voiture"], lct["date_location"], f"{lct.durée_location} Jour(s)", f"{lct.prix_location} Dhs")))
 			r = 1
 			for i in rows:
 				try:
@@ -317,11 +294,11 @@ class GlocationShow:
 	def fClient(self):
 		self.tableConstructor()
 		Cin_filter.grid(column=0, columnspan=6, row=10)
-		listClient = listlocation.AfficherLocationClient(Cin_filter.get())
+		listClient = AfficherLocationClient(Cin_filter.get())
 		rows = []
 		try:
 			for lct in listClient:
-				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+				rows.append(tuple((lct["_id"], lct["Client"], lct["Voiture"], lct["date_location"], f"{lct.durée_location} Jour(s)", f"{lct.prix_location} Dhs")))
 			r = 1
 			for i in rows:
 				try:
@@ -347,9 +324,8 @@ class GlocationShow:
 		# fetching and displaying info
 		rows = []
 		try:
-			for lct in listlocation.ListLocations:
-				# print('-- New data --\n', location)
-				rows.append(tuple((lct.getidLocation(), lct.getClient().getCin(), lct.getVoiture().getImmatricule(), lct.getdate_location(), f"{lct.getdurée_location()} Jour(s)", f"{lct.getprix_location()} Dhs")))
+			for lct in mydb["Location"].find():
+				rows.append(tuple((lct["_id"], lct["Client"], lct["Voiture"], lct["date_location"], f"{lct.durée_location} Jour(s)", f"{lct.prix_location} Dhs")))
 			r = 1
 			for i in rows:
 				try:
@@ -393,35 +369,22 @@ class GlocationShow:
 		
 
 	def update_location(self):
-		Client = self.Client_entry.get()
-		Voiture = self.Voiture_entry.get()
+		id = self.idLocation_entry.get()
 		date_location = self.date_location_entry.get_date()
 		durée_location = self.durée_location_entry.get()
 		prix_location = self.prix_location_entry.get()
 
 		if date_location != '' and durée_location != '' and prix_location != '':
 			#save and update the data
-			try:
-				for lct in listlocation.ListLocations:
-					if str(lct.getidLocation()) == str(LOCA):
-						lct.setdate_location(date_location)
-						lct.setdurée_location(durée_location)
-						lct.setprix_location(prix_location)
-						print(lct)
-						break
-				self.clearBoxes()
-				self.show()
-			except:
-				messagebox.showwarning(message="Selecter une location", title="Location location")
-
+			mydb["Location"].update_one({"_id": id}, {"$set": {"date_location" : date_location, "durée_location" : durée_location, "prix_location" : prix_location}})
+			self.clearBoxes()
+			self.show()
 		else:
 			messagebox.showwarning(message="Remplir tous les champs!", title="Location location")
 
 	def delete_location(self):
-		for location in listlocation.ListLocations:
-			if str(location.getidLocation()) == str(LOCA):
-				listlocation.SupprimerLocation(location)
-				break
+		id = self.idLocation_entry.get()
+		mydb["Location"].delete_one({"_id": id})
 		self.show()
 		self.clearBoxes()
 

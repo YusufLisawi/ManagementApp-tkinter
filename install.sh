@@ -1,2 +1,2 @@
-pip install tkcalendar
-pip install tk
+pip3 install tkcalendar
+pip3 install tk

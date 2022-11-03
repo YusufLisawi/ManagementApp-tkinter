@@ -1,10 +1,9 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Treeview
-from modules.client.client import Client
+from db.conn_mongodb import mydb
 
 FONT = "Arial"
-listclients = [Client("L678946", "test00", "0682860421")]
 class GclientAdd:
 	def __init__(self, master):
 		self.master = master
@@ -47,16 +46,12 @@ class GclientAdd:
 		if Cin == '' and NumPermis == '' and Tele == '':
 			messagebox.showwarning(message="Remplir tous les champs!", title="Location Voiture")
 		else:
-			exist = 0
-			for client in listclients:
-				if Cin == client.getCin() or NumPermis == client.getNumPermis() or Tele == client.getTele():
-					exist = 1
-					break
-			if exist == 0:
-				listclients.append(Client(Cin, NumPermis, Tele))
-				messagebox.showinfo(message=f"Client a ete bien ajouter!", title=f"Location voiture")
-			else:
+			if mydb["Client"].find_one({'cin': Cin, 'numpermis': NumPermis, 'tele': Tele}) != None:
 				messagebox.showwarning(message="Client exist deja!", title="Location Voiture")
+			else:
+				# Mongodb
+				mydb["Client"].insert_one({'cin': Cin, 'numpermis': NumPermis, 'tele': Tele})
+				messagebox.showinfo(message=f"Client a ete bien ajouter!", title=f"Location voiture")
 		pass
 
 class GclientShow:
@@ -114,9 +109,8 @@ class GclientShow:
 		# fetching and displaying info
 		rows = []
 		try:
-			for client in listclients:
-				# print('-- New data --\n', client)
-				rows.append(tuple((client.getCin(), client.getNumPermis(), client.getTele())))
+			for client in mydb["Client"].find():
+				rows.append(tuple((client["cin"], client["numpermis"], client["tele"])))
 			r = 1
 			for i in rows:
 				try:
@@ -148,12 +142,11 @@ class GclientShow:
 			
 
 	def update_client(self):
-		if self.Cin_entry.get() != '' and self.NumPermis_entry.get() != '' and self.Tele_entry.get() != '':
-			#save and update the data
-			for client in listclients:
-				if client.getCin() == CIN:
-					client.ModifierInfo(self.Cin_entry.get(), self.NumPermis_entry.get(), self.Tele_entry.get())
-					break
+		if self.NumPermis_entry.get() != '' and self.Tele_entry.get() != '':
+			# Mongodb update
+			filter = {"cin" : self.Cin_entry.get()}
+			mydb["Client"].update_one(filter, {"$set" : {"cin" : self.Cin_entry.get(), "numpermis": self.NumPermis_entry.get(), "tele" : self.Tele_entry.get()}})
+			
 			self.show()
 			
 			#clear entry boxes
@@ -165,10 +158,8 @@ class GclientShow:
 
 
 	def delete_client(self):
-		for client in listclients:
-			if client.getCin() == self.Cin_entry.get():
-				listclients.remove(client)
-				break
+		# Mongodb
+		mydb["Client"].delete_one({"cin" : self.Cin_entry.get()})
 		self.show()
 		
 		#clear entry boxes

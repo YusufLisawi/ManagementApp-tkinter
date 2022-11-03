@@ -1,61 +1,49 @@
-from modules.voiture.voiture import VoitureCitadinne, VoitureVip
-from modules.location.location import Location
+from db.conn_mongodb import mydb
 
-class ListeLocations:
-	def __init__(self, ListLocations = []):
-		self.ListLocations = ListLocations
-	
-	def AjouterLocation(self, Location):
-		self.ListLocations.append(Location)
+Locations = mydb["Location"]
+Voiture = mydb["Voiture"]
 
-	def SupprimerLocation(self, Location):
-		self.ListLocations.remove(Location)
-	
-	def FiltrerLocationDate(self, date):
-		location_date = []
-		for location in self.ListLocations:
-			if (location.getdate_location() == date):
-				location_date.append(location)
-		return (location_date)
-	
-	def AfficherListeLocation(self):
-		return self.ListLocations
+def FiltrerLocationDate(date):
+	return (Locations.find({"date" : date}))
 
-	def AfficherListeLocationCitadine(self):
-		location_citadine = []
-		for location in self.ListLocations:
-			if (isinstance(location.getVoiture(), VoitureCitadinne)):
-				location_citadine.append(location)
-		return (location_citadine)
+def AfficherListeLocation():
+	return (Locations.find())
 
-	def AfficherListeLocationVip(self):
-		location_Vip = []
-		for location in self.ListLocations:
-			if (isinstance(location.getVoiture(), VoitureVip)):
-				location_Vip.append(location)
-		return (location_Vip)
+def AfficherListeLocationCitadine():
+	VoitureCitadinne = Voiture.find({"voiture": "citadinne"}, {"imma" : 1, "_id": 0})
+	allLocations = []
+	for l in Locations.find():
+		for v in VoitureCitadinne:
+			if l["Voiture"] == v:
+				allLocations.append(l)
+	return (allLocations)
 
-	def AfficherLocationMarque(self, marque):
-		location_marque = []
-		for location in self.ListLocations:
-			if (location.getVoiture().getMarque() == marque):
-				location_marque.append(location)
-		return (location_marque)
+def AfficherListeLocationVip():
+	VoitureCitadinne = Voiture.find({"voiture": "vip"}, {"imma" : 1, "_id": 0})
+	allLocations = []
+	for l in Locations.find():
+		for v in VoitureCitadinne:
+			if l["Voiture"] == v["imma"]:
+				allLocations.append(l)
+	return (allLocations)
 
-	def AfficherLocationImma(self, immatricule):
-		location_Imma = []
-		for location in self.ListLocations:
-			if (location.getVoiture().getImmatricule() == immatricule):
-				location_Imma.append(location)
-		return (location_Imma)
+def AfficherLocationMarque(marque):
+	voitures = Voiture.find({"marque" : marque}, {"imma" : 1, "marque" : 1, "_id": 0})
+	allLocations = []
+	for l in Locations.find():
+		for v in voitures:
+			if l["Voiture"] == v["imma"]:
+				allLocations.append(l)
+	return (allLocations)
 
-	def AfficherLocationClient(self, Cin):
-		location_cin = []
-		for location in self.ListLocations:
-			if (location.getClient().getCin() == Cin):
-				location_cin.append(location)
-		return (location_cin)
-	
+def AfficherLocationImma(immatricule):
+	return (Locations.find({"Voiture" : immatricule}))
 
-	
-
+def AfficherLocationClient(Cin):
+	clients = mydb["Client"].find({"cin" : Cin}, {"cin" : 1,"_id": 0})
+	allLocations = []
+	for l in Locations.find():
+		for c in clients:
+			if l["Client"] == c["cin"]:
+				allLocations.append(l)
+	return (allLocations)

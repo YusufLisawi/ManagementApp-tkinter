@@ -2,9 +2,9 @@ from tkinter import *
 from tkinter.ttk import Treeview
 from tkinter import messagebox
 from modules.voiture.voiture import *
+from db.conn_mongodb import mydb
 
 FONT = "Arial"
-listvoiture = [VoitureVip("6969", "toyota", "test", "2019", "6", type="SUV"), VoitureCitadinne("3402", "toyota", "test", "2019", "6", gamme="A")]
 class GvoitureAdd:
 	def __init__(self, master):
 		self.master = master
@@ -116,31 +116,23 @@ class GvoitureAdd:
 		if Imma == '' or marque == '' or carburant == '' or model == '' or puissance == '' or (type == '' and gamme == ''):
 			messagebox.showwarning(message="Remplir tous les champs!", title="Location Voiture")
 		else:
-			exist = 0
-			for voiture in listvoiture:
-				if Imma == voiture.getImmatricule():
-					exist = 1
-					break
-			if exist == 0:
+			if mydb["Voiture"].find_one({"imma" : Imma}) == None :
 				if type != '' and gamme == '':
 					if type in ["4*4", "SUV", "minibus", "limousine"]:
-						listvoiture.append(VoitureVip(Imma, marque, carburant, model, puissance, type))
+						mydb["Voiture"].insert_one({"voiture": "vip","imma" : Imma, "marque" : marque, "carburant" : carburant, "model" : model, "puissance" : puissance, "spec" : type})
 						messagebox.showinfo(message=f"Voiture a ete bien ajouter!", title=f"Location voiture")
 					else:
 						messagebox.showwarning(message="Le Type est invalide", title="Location Voiture")
 
 				elif type == '' and gamme != '':
 					if gamme in ["A", "B", "C"]:
-						listvoiture.append(VoitureCitadinne(Imma, marque, carburant, model, puissance, gamme))
-						messagebox.showwarning(message=f"Voiture a ete bien ajouter!", title=f"Location voiture")
+						mydb["Voiture"].insert_one({"voiture": "citadinne", "imma" : Imma, "marque" : marque, "carburant" : carburant, "model" : model, "puissance" : puissance, "spec" : gamme})
+						messagebox.showinfo(message=f"Voiture a ete bien ajouter!", title=f"Location voiture")
 					else:
 						messagebox.showwarning(message="Le Gamme est invalide", title="Location Voiture")
 				
 			else:
 				messagebox.showwarning(message="Voitures exist deja!", title="Location Voiture")
-
-		# for v in listvoiture:
-		# 	print(v)
 
 class GvoitureShow:		
 	def __init__(self, master):
@@ -200,24 +192,21 @@ class GvoitureShow:
 		self.delete_button.grid(row = 8, column = 0, columnspan=6, pady = 10)
 
 	def show(self):
-		self.table = Treeview(self.frame, columns=(1,2,3,4,5,6), show="headings", height="5")
-		self.table.grid(column=0, columnspan=6, row=2)
-		self.table.heading(1, text="Immatriculation")
-		self.table.heading(2, text="Marque")
-		self.table.heading(3, text="Carburant")
-		self.table.heading(4, text="Modèle")
-		self.table.heading(5, text="Puissance fiscale")
-		self.table.heading(6, text="Gamme/Type")
+		self.table = Treeview(self.frame, columns=(1,2,3,4,5,6,7), show="headings", height="5")
+		self.table.grid(column=0, columnspan=7, row=2)
+		self.table.heading(1, text="Voiture")
+		self.table.heading(2, text="Immatriculation")
+		self.table.heading(3, text="Marque")
+		self.table.heading(4, text="Carburant")
+		self.table.heading(5, text="Modèle")
+		self.table.heading(6, text="Puissance fiscale (CV)")
+		self.table.heading(7, text="Gamme/Type")
 
 		# fetching and displaying info
 		rows = []
 		try:
-			for voiture in listvoiture:
-				# print('-- New data --\n', voiture)
-				if isinstance(voiture, VoitureVip):
-					rows.append(tuple((voiture.getImmatricule(), voiture.getMarque(), voiture.getCarburant(), voiture.getModele(), f"{voiture.getPuissancefis()} CV", f"{voiture.getType()} (Type )")))
-				elif isinstance(voiture, VoitureCitadinne):
-					rows.append(tuple((voiture.getImmatricule(), voiture.getMarque(), voiture.getCarburant(), voiture.getModele(), f"{voiture.getPuissancefis()} CV", f"{voiture.getGamme()} (Gamme)")))
+			for voiture in mydb["Voiture"].find():
+					rows.append(tuple((voiture["voiture"], voiture["imma"], voiture["marque"], voiture["carburant"], voiture["model"], voiture["puissance"], voiture["spec"])))
 			r = 1
 			for i in rows:
 				try:
@@ -238,12 +227,12 @@ class GvoitureShow:
 		IMMA = values[0]
 		#output to entry boxes
 		try:
-			self.Imma_entry.insert(0,values[0])
-			self.marque_entry.insert(0,values[1])
-			self.carburant_entry.insert(0, values[2])
-			self.model_entry.insert(0, values[3])
-			self.puissance_entry.insert(0, values[4][:-3])
-			self.gaty_entry.insert(0,values[5][:-8])
+			self.Imma_entry.insert(0,values[1])
+			self.marque_entry.insert(0,values[2])
+			self.carburant_entry.insert(0, values[3])
+			self.model_entry.insert(0, values[4])
+			self.puissance_entry.insert(0, values[5])
+			self.gaty_entry.insert(0,values[6])
 		except:
 			messagebox.showwarning(message="Selecter un Voitures!", title="Location Voiture")
 			
@@ -251,23 +240,21 @@ class GvoitureShow:
 	def update_voiture(self):
 		if self.Imma_entry.get() != '' and self.marque_entry.get() != '' and self.carburant_entry.get() != '' and self.model_entry.get() != '' and self.puissance_entry.get() != '' and self.gaty_entry.get() != '':
 			#save and update the data
-			for voiture in listvoiture:
-				if voiture.getImmatricule() == IMMA:
-					if isinstance(voiture, VoitureVip):
-						if self.gaty_entry.get() in ["4*4", "SUV", "minibus", "limousine"]:
-							voiture.ModifierInfo(self.Imma_entry.get(), self.marque_entry.get(), self.carburant_entry.get(), self.model_entry.get(), self.puissance_entry.get(), self.gaty_entry.get())
-							self.clearBoxes()
-							break
-						else:
-							messagebox.showwarning(message="Le type est invalide", title="Location Voiture")
+			found_voiture = mydb["Voiture"].find_one({"imma" : IMMA})
+			if found_voiture != None:
+				if found_voiture["voiture"] == "vip":
+					if self.gaty_entry.get() in ["4*4", "SUV", "minibus", "limousine"]:
+						mydb["Voiture"].update_one(found_voiture, {"$set" :{"imma" : self.Imma_entry.get(), "marque" : self.marque_entry.get(), "carburant" : self.carburant_entry.get(), "model" : self.model_entry.get(), "puissance" : self.puissance_entry.get(), "spec" : self.gaty_entry.get()}})
+						self.clearBoxes()
+					else:
+						messagebox.showwarning(message="Le type est invalide", title="Location Voiture")
 
-					elif isinstance(voiture, VoitureCitadinne):
-						if self.gaty_entry.get().upper() in ['A', 'B', 'C']:
-							voiture.ModifierInfo(self.Imma_entry.get(), self.marque_entry.get(), self.carburant_entry.get(), self.model_entry.get(), self.puissance_entry.get(), self.gaty_entry.get().upper())
-							self.clearBoxes()
-							break
-						else:
-							messagebox.showwarning(message="Le Gamme est invalide", title="Location Voiture")
+				elif found_voiture["voiture"] == "citadinne":
+					if self.gaty_entry.get().upper() in ['A', 'B', 'C']:
+						mydb["Voiture"].update_one(found_voiture, {"$set" :{"imma" : self.Imma_entry.get(), "marque" : self.marque_entry.get(), "carburant" : self.carburant_entry.get(), "model" : self.model_entry.get(), "puissance" : self.puissance_entry.get(), "spec" : self.gaty_entry.get()}})
+						self.clearBoxes()
+					else:
+						messagebox.showwarning(message="Le Gamme est invalide", title="Location Voiture")
 			self.show()
 		
 		else:
@@ -275,10 +262,7 @@ class GvoitureShow:
 
 
 	def delete_voiture(self):
-		for voiture in listvoiture:
-			if voiture.getImmatricule() == self.Imma_entry.get():
-				listvoiture.remove(voiture)
-				break
+		mydb["Voiture"].delete_one({"imma" : self.Imma_entry.get()})
 		self.show()
 		self.clearBoxes()
 

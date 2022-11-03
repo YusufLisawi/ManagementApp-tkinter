@@ -1,16 +1,14 @@
-from modules.user.utilisateur import Utilisateur
 from setup.window import Window
 from tkinter import *
 from tkinter import messagebox
-from modules.user.ListeUtilisateurs import ListeUtilisateurs
+from db.conn_mongodb import mydb
 
 FONT = "Arial"
 
 def login_test():
-	listUser = ListeUtilisateurs(ListUsers=[Utilisateur("admin","admin","admin@admin.com")])
 	login = login_entry.get()
 	mdp = password_entry.get()
-	if listUser.authentifier(login, mdp):
+	if mydb["Users"].find_one({"login": login, "password": mdp}) != None:
 		win.destroy()
 		from interface.Accueil import Accueil
 	else:

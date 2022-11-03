@@ -1,11 +1,9 @@
 from tkinter import *
 from tkinter.ttk import Treeview
 from tkinter import messagebox
-from modules.user.utilisateur import Utilisateur
-from modules.user.ListeUtilisateurs import ListeUtilisateurs
+from db.conn_mongodb import mydb
 
 FONT = "Arial"
-listUser = ListeUtilisateurs(ListUsers=[Utilisateur("admin","admin","admin@admin.com")])
 class GuserAdd:
 	def __init__(self, master):
 		self.master = master
@@ -48,13 +46,8 @@ class GuserAdd:
 		if login == '' or email == '' or password == '':
 			messagebox.showwarning(message="Remplir tous les champs!", title="Location Voiture")
 		else:
-			exist = 0
-			for acc in listUser.ListeUtilisateur:
-				if login == acc.getLogin() and email == acc.getEmail():
-					exist = 1
-					break
-			if exist == 0: 
-				listUser.Ajouter(Utilisateur(login, password, email))
+			if mydb["Users"].find_one({"login" : login}) == None:
+				mydb["Users"].insert_one({"login" : login, "email" : email, "password" : password})
 				messagebox.showinfo(message=f"Utilisateur a ete bien ajouter!", title=f"Location voiture")
 
 			else:
@@ -108,9 +101,8 @@ class GuserShow:
 		# fetching and displaying info
 		rows = []
 		try:
-			for user in listUser.ListeUtilisateur:
-				# print('-- New data --\n', user)
-				rows.append(tuple((user.getLogin(), user.getEmail())))
+			for user in mydb["Users"].find():
+				rows.append(tuple((user["login"], user["email"])))
 			r = 1
 			if len(rows) > 0: 
 				for i in rows:
@@ -142,11 +134,9 @@ class GuserShow:
 
 	def update_user(self):
 		if self.login_entry.get() != '' and self.email_entry.get() != '':
-			#save and update the data
-			for acc in listUser.ListeUtilisateur:
-				if acc.getLogin() == LOGIN:
-					listUser.ModifierUserInfo(acc, self.login_entry.get(), self.email_entry.get())
-					break
+			# Mongodb update
+			filter = {"login" : LOGIN}
+			mydb["Users"].update_one(filter, {"$set" : {"login" : self.login_entry.get(), "email": self.email_entry.get()}})
 			self.show()
 		
 			#clear entry boxes
@@ -157,7 +147,7 @@ class GuserShow:
 
 
 	def delete_user(self):
-		listUser.Supprimer(self.login_entry.get())
+		mydb["Users"].delete_one({"login" : self.login_entry.get()})
 		self.show()
 		
 		#clear entry boxes
